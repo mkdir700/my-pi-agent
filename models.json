@@ -1,0 +1,10 @@
+{
+  "providers": {
+    "openai": {
+      "baseUrl": "https://cc.z2blog.com/v1",
+      "api": "openai-responses",
+      "apiKey": "$OPENAI_CODEX_API_KEY",
+      "authHeader": true
+    }
+  }
+}
