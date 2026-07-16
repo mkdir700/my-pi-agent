@@ -1,8 +1,8 @@
 {
   "lastChangelogVersion": "0.80.7",
   "editorPaddingX": 1,
-  "defaultProvider": "openai-codex",
-  "defaultModel": "gpt-5.6-sol",
+  "defaultProvider": "openai",
+  "defaultModel": "gpt-5.6-terra",
   "defaultThinkingLevel": "high",
   "theme": "github-dark-default",
   "skills": [
@@ -12,6 +12,8 @@
   ],
   "enabledModels": [
     "openai-codex/gpt-5.6-sol",
+    "openai-codex/gpt-5.6-luna",
+    "openai-codex/gpt-5.6-terra",
     "openai/gpt-5.6-luna",
     "openai/gpt-5.6-sol",
     "openai/gpt-5.6-terra"
@@ -28,5 +30,41 @@
   ],
   "prompts": [
     "~/.claude/commands/review-strict.md"
-  ]
+  ],
+  "subagents": {
+    "agentOverrides": {
+      "context-builder": {
+        "model": "gpt-5.6-terra",
+        "thinking": "high"
+      },
+      "delegate": {
+        "model": "gpt-5.6-luna",
+        "thinking": "low"
+      },
+      "oracle": {
+        "model": "gpt-5.6-sol",
+        "thinking": "max"
+      },
+      "planner": {
+        "model": "gpt-5.6-terra",
+        "thinking": "high"
+      },
+      "researcher": {
+        "model": "gpt-5.6-terra",
+        "thinking": "high"
+      },
+      "reviewer": {
+        "model": "gpt-5.6-terra",
+        "thinking": "high"
+      },
+      "scout": {
+        "model": "gpt-5.6-luna",
+        "thinking": "low"
+      },
+      "worker": {
+        "model": "gpt-5.6-terra",
+        "thinking": "high"
+      }
+    }
+  }
 }
