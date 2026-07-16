@@ -23,7 +23,6 @@
     "npm:pi-goal",
     "npm:pi-web-access",
     "git:github.com/code-yeongyu/pi-nested-agents-md",
-    "git:github.com/code-yeongyu/pi-apply-patch",
     "npm:@howaboua/pi-ask",
     "npm:pi-wtf"
   ],
