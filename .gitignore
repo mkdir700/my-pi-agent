@@ -6,3 +6,5 @@ trust.json
 skills/find-skills
 skills/atomic-commits
 run-history.jsonl
+.pi-subagents/artifacts
+auth.json
