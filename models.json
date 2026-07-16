@@ -4,7 +4,12 @@
       "baseUrl": "https://cc.z2blog.com/v1",
       "api": "openai-responses",
       "apiKey": "$OPENAI_CODEX_API_KEY",
-      "authHeader": true
+      "authHeader": true,
+      "modelOverrides": {
+        "gpt-5.6-sol": { "contextWindow": 372000 },
+        "gpt-5.6-luna": { "contextWindow": 372000 },
+        "gpt-5.6-terra": { "contextWindow": 372000 }
+      }
     }
   }
 }
