@@ -1,0 +1,4 @@
+interface:
+  display_name: "Strict Code Review"
+  short_description: "严格审查当前代码变更，识别缺陷、架构偏差、安全风险与测试缺口"
+  default_prompt: "Use $review-strict to review the current code changes rigorously."
