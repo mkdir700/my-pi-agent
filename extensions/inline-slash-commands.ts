@@ -3,8 +3,14 @@ import {
 	type EditorFactory,
 	type ExtensionAPI,
 } from "@earendil-works/pi-coding-agent";
-import type { EditorComponent } from "@earendil-works/pi-tui";
+import { fuzzyFilter, type EditorComponent } from "@earendil-works/pi-tui";
 import { readFileSync } from "node:fs";
+import {
+	findInlineCommandMatches,
+	parseCommandArgs,
+	stripFrontmatter,
+	substituteArgs,
+} from "../lib/inline-slash-command-utils.ts";
 
 type SlashCommand = {
 	name: string;
@@ -75,8 +81,11 @@ class TriggerColorEditor implements EditorComponent {
 	}
 
 	get actionHandlers(): Map<unknown, () => void> {
-		return (this.base as EditorComponent & { actionHandlers: Map<unknown, () => void> })
-			.actionHandlers;
+		return (
+			this.base as EditorComponent & {
+				actionHandlers: Map<unknown, () => void>;
+			}
+		).actionHandlers;
 	}
 
 	get onEscape(): (() => void) | undefined {
@@ -84,7 +93,8 @@ class TriggerColorEditor implements EditorComponent {
 	}
 
 	set onEscape(handler: (() => void) | undefined) {
-		(this.base as EditorComponent & { onEscape?: () => void }).onEscape = handler;
+		(this.base as EditorComponent & { onEscape?: () => void }).onEscape =
+			handler;
 	}
 
 	get onCtrlD(): (() => void) | undefined {
@@ -96,20 +106,30 @@ class TriggerColorEditor implements EditorComponent {
 	}
 
 	get onPasteImage(): (() => void) | undefined {
-		return (this.base as EditorComponent & { onPasteImage?: () => void }).onPasteImage;
+		return (this.base as EditorComponent & { onPasteImage?: () => void })
+			.onPasteImage;
 	}
 
 	set onPasteImage(handler: (() => void) | undefined) {
-		(this.base as EditorComponent & { onPasteImage?: () => void }).onPasteImage = handler;
+		(
+			this.base as EditorComponent & { onPasteImage?: () => void }
+		).onPasteImage = handler;
 	}
 
 	get onExtensionShortcut(): ((data: string) => boolean) | undefined {
-		return (this.base as EditorComponent & { onExtensionShortcut?: (data: string) => boolean })
-			.onExtensionShortcut;
+		return (
+			this.base as EditorComponent & {
+				onExtensionShortcut?: (data: string) => boolean;
+			}
+		).onExtensionShortcut;
 	}
 
 	set onExtensionShortcut(handler: ((data: string) => boolean) | undefined) {
-		(this.base as EditorComponent & { onExtensionShortcut?: (data: string) => boolean }).onExtensionShortcut = handler;
+		(
+			this.base as EditorComponent & {
+				onExtensionShortcut?: (data: string) => boolean;
+			}
+		).onExtensionShortcut = handler;
 	}
 
 	render(width: number): string[] {
@@ -161,62 +181,6 @@ class TriggerColorEditor implements EditorComponent {
 	}
 }
 
-const parseArgs = (value: string): string[] => {
-	const args: string[] = [];
-	let current = "";
-	let quote: string | undefined;
-
-	for (const character of value) {
-		if (quote) {
-			if (character === quote) quote = undefined;
-			else current += character;
-		} else if (character === '"' || character === "'") {
-			quote = character;
-		} else if (/\s/.test(character)) {
-			if (current) {
-				args.push(current);
-				current = "";
-			}
-		} else {
-			current += character;
-		}
-	}
-
-	if (current) args.push(current);
-	return args;
-};
-
-const substituteArgs = (content: string, args: string[]): string => {
-	const allArgs = args.join(" ");
-	return content.replace(
-		/\$\{(\d+|ARGUMENTS|@):-([^}]*)\}|\$\{@:(\d+)(?::(\d+))?\}|\$(ARGUMENTS|@|\d+)/g,
-		(_match, defaultTarget, defaultValue, sliceStart, sliceLength, simple) => {
-			if (defaultTarget) {
-				const value =
-					defaultTarget === "@" || defaultTarget === "ARGUMENTS"
-						? allArgs
-						: args[Number.parseInt(defaultTarget, 10) - 1];
-				return value || defaultValue;
-			}
-			if (sliceStart) {
-				const start = Math.max(0, Number.parseInt(sliceStart, 10) - 1);
-				return sliceLength
-					? args
-							.slice(start, start + Number.parseInt(sliceLength, 10))
-							.join(" ")
-					: args.slice(start).join(" ");
-			}
-			if (simple === "@" || simple === "ARGUMENTS") return allArgs;
-			return args[Number.parseInt(simple, 10) - 1] ?? "";
-		},
-	);
-};
-
-const stripFrontmatter = (content: string): string =>
-	content.startsWith("---\n")
-		? (content.match(/^---\s*\n[\s\S]*?\n---\s*\n?([\s\S]*)$/)?.[1] ?? content)
-		: content;
-
 const getExpandableCommands = (pi: ExtensionAPI): SlashCommand[] =>
 	pi
 		.getCommands()
@@ -235,7 +199,7 @@ const expandCommand = (
 	try {
 		const content = readFileSync(command.sourceInfo.path, "utf8");
 		if (command.source === "prompt")
-			return substituteArgs(stripFrontmatter(content), parseArgs(args));
+			return substituteArgs(stripFrontmatter(content), parseCommandArgs(args));
 
 		const body = stripFrontmatter(content).trim();
 		const location = command.sourceInfo.path;
@@ -271,19 +235,17 @@ export default function inlineSlashCommands(pi: ExtensionAPI): void {
 
 				const prefix = `/${match[1] ?? ""}`;
 				const query = match[1] ?? "";
-				const items = getExpandableCommands(pi).flatMap((command) =>
-					command.name.startsWith(query)
-						? [
-								{
-									value: command.name,
-									label: command.name,
-									description:
-										command.description ??
-										(command.source === "skill" ? "Skill" : "Prompt template"),
-								},
-							]
-						: [],
-				);
+				const items = fuzzyFilter(
+					getExpandableCommands(pi),
+					query,
+					(command) => command.name,
+				).map((command) => ({
+					value: command.name,
+					label: command.name,
+					description:
+						command.description ??
+						(command.source === "skill" ? "Skill" : "Prompt template"),
+				}));
 				return Promise.resolve(items.length > 0 ? { items, prefix } : null);
 			},
 			applyCompletion(lines, cursorLine, cursorCol, item, prefix) {
@@ -322,35 +284,7 @@ export default function inlineSlashCommands(pi: ExtensionAPI): void {
 		if (commands.length === 0) return { action: "continue" };
 
 		const byName = new Map(commands.map((command) => [command.name, command]));
-		const matches: Array<{
-			commandStart: number;
-			commandName: string;
-			commandEnd: number;
-		}> = [];
-		for (let index = 0; index < event.text.length; index += 1) {
-			if (
-				event.text[index] !== "/" ||
-				(index > 0 && !/[\t ]/.test(event.text[index - 1]))
-			)
-				continue;
-
-			const command = commands.find((candidate) => {
-				const commandEnd = index + candidate.name.length + 1;
-				return (
-					event.text.startsWith(`/${candidate.name}`, index) &&
-					(commandEnd === event.text.length ||
-						/[\t ]/.test(event.text[commandEnd]))
-				);
-			});
-			if (!command) continue;
-
-			matches.push({
-				commandStart: index,
-				commandName: command.name,
-				commandEnd: index + command.name.length + 1,
-			});
-			index += command.name.length;
-		}
+		const matches = findInlineCommandMatches(event.text, commands);
 
 		if (matches.length === 0) return { action: "continue" };
 		const firstCommand = matches[0];
