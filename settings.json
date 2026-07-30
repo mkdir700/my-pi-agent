@@ -1,5 +1,5 @@
 {
-  "lastChangelogVersion": "0.80.7",
+  "lastChangelogVersion": "0.83.0",
   "editorPaddingX": 1,
   "defaultProvider": "openai",
   "defaultModel": "gpt-5.6-terra",
@@ -32,7 +32,8 @@
     "npm:@howaboua/pi-ask",
     "npm:pi-wtf",
     "npm:pi-read-mode",
-    "npm:pi-patty-bg-tasks"
+    "npm:pi-patty-bg-tasks",
+    "npm:pi-smart-compact@7.22.0"
   ],
   "prompts": [
     "~/.claude/commands/review-strict.md"

@@ -46,7 +46,9 @@ export const substituteArgs = (content: string, args: string[]): string => {
 			if (sliceStart) {
 				const start = Math.max(0, Number.parseInt(sliceStart, 10) - 1);
 				return sliceLength
-					? args.slice(start, start + Number.parseInt(sliceLength, 10)).join(" ")
+					? args
+							.slice(start, start + Number.parseInt(sliceLength, 10))
+							.join(" ")
 					: args.slice(start).join(" ");
 			}
 			if (simple === "@" || simple === "ARGUMENTS") return allArgs;
@@ -80,7 +82,8 @@ export const findInlineCommandMatches = (
 			quote = character;
 			continue;
 		}
-		if (character !== "/" || (index > 0 && !/[\t ]/.test(text[index - 1]))) continue;
+		if (character !== "/" || (index > 0 && !/[\t ]/.test(text[index - 1])))
+			continue;
 
 		const command = commands.find((candidate) => {
 			const commandEnd = index + candidate.name.length + 1;
