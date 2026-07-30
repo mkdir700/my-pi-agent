@@ -74,6 +74,44 @@ class TriggerColorEditor implements EditorComponent {
 		this.base.borderColor = color;
 	}
 
+	get actionHandlers(): Map<unknown, () => void> {
+		return (this.base as EditorComponent & { actionHandlers: Map<unknown, () => void> })
+			.actionHandlers;
+	}
+
+	get onEscape(): (() => void) | undefined {
+		return (this.base as EditorComponent & { onEscape?: () => void }).onEscape;
+	}
+
+	set onEscape(handler: (() => void) | undefined) {
+		(this.base as EditorComponent & { onEscape?: () => void }).onEscape = handler;
+	}
+
+	get onCtrlD(): (() => void) | undefined {
+		return (this.base as EditorComponent & { onCtrlD?: () => void }).onCtrlD;
+	}
+
+	set onCtrlD(handler: (() => void) | undefined) {
+		(this.base as EditorComponent & { onCtrlD?: () => void }).onCtrlD = handler;
+	}
+
+	get onPasteImage(): (() => void) | undefined {
+		return (this.base as EditorComponent & { onPasteImage?: () => void }).onPasteImage;
+	}
+
+	set onPasteImage(handler: (() => void) | undefined) {
+		(this.base as EditorComponent & { onPasteImage?: () => void }).onPasteImage = handler;
+	}
+
+	get onExtensionShortcut(): ((data: string) => boolean) | undefined {
+		return (this.base as EditorComponent & { onExtensionShortcut?: (data: string) => boolean })
+			.onExtensionShortcut;
+	}
+
+	set onExtensionShortcut(handler: ((data: string) => boolean) | undefined) {
+		(this.base as EditorComponent & { onExtensionShortcut?: (data: string) => boolean }).onExtensionShortcut = handler;
+	}
+
 	render(width: number): string[] {
 		return this.base
 			.render(width)
